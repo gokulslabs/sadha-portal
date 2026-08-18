@@ -138,10 +138,9 @@ function Sidebar() {
   }
 
   return (
-    <>
+    <div ref={sidebarRef}>
       {/* Main rail: narrow + permanent */}
       <div
-        ref={sidebarRef}
         className="fixed inset-y-0 left-0 z-40 flex w-[72px] flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-xl"
         style={{ width: RAIL_WIDTH }}
       >
@@ -240,7 +239,7 @@ function Sidebar() {
           </nav>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
