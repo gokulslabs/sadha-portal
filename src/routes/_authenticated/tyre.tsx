@@ -586,6 +586,17 @@ function TyrePage() {
 
   const selected = (tyres ?? []).find((t) => t.id === selectedId) ?? null;
 
+  // When a tyre is clicked, bring the details card into view (it sits below the diagram).
+  useEffect(() => {
+    if (selectedId) {
+      requestAnimationFrame(() => {
+        document
+          .getElementById("tyre-details")
+          ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+    }
+  }, [selectedId]);
+
   const axles = useMemo(() => {
     const map = new Map<string, Tyre[]>();
     for (const t of tyres ?? []) {
@@ -747,7 +758,7 @@ function TyrePage() {
           </div>
 
           {selected && (
-            <div className="rounded-md bg-card p-5 shadow-panel">
+            <div id="tyre-details" className="rounded-md bg-card p-5 shadow-panel">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-base font-semibold text-foreground">
                   Tyre {selected.position_code} details
