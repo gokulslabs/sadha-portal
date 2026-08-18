@@ -12,12 +12,21 @@ export function useReportRows(def?: ReportDef) {
       if (!def) return [];
       const select = def.columns.map((c) => c.key).join(",");
       // Generic table access — table name is derived from the trusted registry.
-      const { data, error } = await supabase
-        .from(def.table as never)
-        .select(select)
-        .limit(1000);
-      if (error) throw error;
-      return (data ?? []) as ReportRow[];
+      // Supabase caps SELECT at 1000 rows (db-max-rows), so paginate over all
+      // records to avoid silently truncating larger reports (e.g. rent entries).
+      const PAGE = 1000;
+      const all: ReportRow[] = [];
+      for (let start = 0; ; start += PAGE) {
+        const { data, error } = await supabase
+          .from(def.table as never)
+          .select(select)
+          .range(start, start + PAGE - 1);
+        if (error) throw error;
+        const rows = (data ?? []) as ReportRow[];
+        all.push(...rows);
+        if (rows.length < PAGE) break;
+      }
+      return all;
     },
   });
 }
