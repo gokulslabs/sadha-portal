@@ -44,6 +44,8 @@ export const Route = createFileRoute("/_authenticated/")({
 const inr = (n: number) =>
   "₹ " + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+const inr0 = (n: number) => "₹ " + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+
 function SectionBar({ title, icon }: { title: string; icon: "chart" | "action" }) {
   return (
     <div className="mb-3 flex items-center justify-center gap-2 rounded-md bg-card py-3.5 shadow-panel">
@@ -120,6 +122,71 @@ function MiniStat({ label, value, tone }: { label: string; value: string; tone?:
 
 const PIE_COLORS = ["var(--chart-red)", "var(--chart-amber)", "var(--chart-blue)", "var(--chart-green)", "var(--chart-5)"];
 
+/** Zoho-style donut: slices with colored ring, center total, right-side legend. */
+function TransporterDonut({
+  data,
+  total,
+}: {
+  data: { name: string; value: number }[];
+  total: number;
+}) {
+  if (data.length === 0) {
+    return (
+      <div className="flex h-[400px] items-center justify-center text-sm text-muted-foreground">
+        No transporter data
+      </div>
+    );
+  }
+  const pct = (v: number) => (total > 0 ? `${((v / total) * 100).toFixed(1)}%` : "0%");
+  return (
+    <div className="flex h-[400px] items-center gap-4">
+      <div className="relative h-[280px] w-[280px] shrink-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              innerRadius={88}
+              outerRadius={126}
+              paddingAngle={1}
+              strokeWidth={2}
+              stroke="var(--card)"
+            >
+              {data.map((entry, i) => (
+                <Cell key={entry.name} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip formatter={(v: number) => [inr(Number(v)), "Balance"]} />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <p className="text-xl font-bold text-foreground">{inr0(total)}</p>
+          <p className="text-xs text-muted-foreground">Total Balance</p>
+        </div>
+      </div>
+      <div className="min-w-0 flex-1 space-y-2">
+        {data.map((entry, i) => (
+          <div key={entry.name} className="flex items-center justify-between gap-2 text-sm">
+            <span className="flex items-center gap-2 text-foreground">
+              <span
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}
+              />
+              <span className="truncate">{entry.name}</span>
+            </span>
+            <span className="whitespace-nowrap text-xs text-muted-foreground">
+              {inr0(entry.value)} · {pct(entry.value)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Dashboard() {
   const { data, isLoading } = useDashboardData();
 
@@ -171,29 +238,7 @@ function Dashboard() {
         <SectionBar title="Transporter Wise Accounts Overview" icon="chart" />
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="rounded-md bg-card p-4 shadow-panel">
-            <div className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Legend verticalAlign="top" iconType="square" height={36} />
-                  <Tooltip formatter={(v: number) => inr(Number(v))} />
-                  <Pie
-                    data={pieData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="52%"
-                    innerRadius={72}
-                    outerRadius={128}
-                    paddingAngle={0}
-                    label={({ value }) => Number(value).toLocaleString("en-US")}
-                  >
-                    {pieData.map((t, i) => (
-                      <Cell key={t.name} fill={PIE_COLORS[i % PIE_COLORS.length]} stroke="var(--card)" />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <TransporterDonut data={transporters} total={data?.transporterTotal ?? 0} />
           </div>
           <div className="grid content-start gap-4">
             <MiniStat label="Overall Current Balance" value={inr(data?.transporterTotal ?? 0)} />
