@@ -36,7 +36,6 @@ export const NAV: NavItem[] = [
     children: [
       { label: "Diesel Entries", slug: "diesel-entries" },
       { label: "Def Oil Entries", slug: "def-oil-entries" },
-      { label: "Diesel Accounts", slug: "diesel-accounts" },
     ],
   },
   {
@@ -79,9 +78,6 @@ export const NAV: NavItem[] = [
     children: [
       { label: "Accounts", slug: "accounts-overview" },
       { label: "Income & Expense", slug: "income-expense" },
-      { label: "Client Accounts", slug: "client-accounts" },
-      { label: "Vendor Accounts", slug: "vendor-accounts" },
-      { label: "Driver Accounts", slug: "driver-accounts" },
     ],
   },
   {
