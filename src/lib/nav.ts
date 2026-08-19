@@ -113,7 +113,6 @@ export const NAV: NavItem[] = [
     label: "Profile",
     icon: UserRound,
     children: [
-      { label: "Profile", slug: "profile" },
       { label: "Company Profile", slug: "company-profile" },
       { label: "Transporters", slug: "transporters" },
     ],
