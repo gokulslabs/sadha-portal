@@ -225,10 +225,10 @@ function Dashboard() {
         <div>
           <SectionBar title="Quick Actions" icon="action" />
           <div className="grid gap-4 sm:grid-cols-2">
-            <QuickAction label="Add Client Income" slug="add-sales-entry" />
-            <QuickAction label="Add Vendor Expense" slug="income-expense" />
-            <QuickAction label="Add Diesel Amount" slug="add-rent-entry" />
-            <QuickAction label="Add Driver Expense" slug="add-day-fees-entry" />
+            <QuickAction label="Add Sales Entry" slug="add-sales-entry" />
+            <QuickAction label="Add Rent Entry" slug="add-rent-entry" />
+            <QuickAction label="Add Day Fees Entry" slug="add-day-fees-entry" />
+            <QuickAction label="Add Boulders Entry" slug="add-boulders-entries" />
           </div>
         </div>
       </div>

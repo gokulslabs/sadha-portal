@@ -258,6 +258,9 @@ function PageView() {
             <p className="mt-1 text-sm text-muted-foreground">
               The page you're looking for couldn't be found or doesn't exist.
             </p>
+            <Link to="/" className="mt-4 inline-block text-sm font-medium text-action hover:underline">
+              Back to Dashboard
+            </Link>
           </div>
         </div>
       </AppShell>
@@ -298,7 +301,7 @@ function PageView() {
             >
               <Download className="h-4 w-4" />
             </Button>
-            {REPORT_TO_FORM[def.slug] ? (
+            {REPORT_TO_FORM[def.slug] && (
               <Link
                 to="/p/$"
                 params={{ _splat: REPORT_TO_FORM[def.slug]! }}
@@ -306,10 +309,6 @@ function PageView() {
               >
                 <Plus className="h-4 w-4" /> Add
               </Link>
-            ) : (
-              <Button size="sm" className="h-9 bg-action text-action-foreground hover:bg-action/90" disabled>
-                <Plus className="h-4 w-4" /> Add
-              </Button>
             )}
           </div>
         </div>
