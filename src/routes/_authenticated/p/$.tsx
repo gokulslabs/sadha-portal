@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Search, Download, Printer, Loader2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Plus, Search, Download, Printer, Loader2, Power, PowerOff } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/layout/AppShell";
 import { findPage } from "@/lib/nav";
 import { findReport } from "@/lib/reports";
@@ -215,8 +217,25 @@ function FamilyLandingPage({ slug }: { slug: string }) {
 }
 
 function PageView() {
+  const qc = useQueryClient();
   const { _splat } = Route.useParams();
   const slug = String(_splat ?? "");
+  const isTransporters = slug === "transporters";
+
+  async function toggleTransporter(row: ReportRow, active: boolean) {
+    const name = String(row["transporter_name"] ?? "transporter");
+    try {
+      const { error } = await supabase
+        .from("transporters" as never)
+        .update({ is_active: active } as never)
+        .eq("id", String(row["id"]));
+      if (error) throw error;
+      toast.success(`${name} ${active ? "activated" : "deactivated"}`);
+      qc.invalidateQueries({ queryKey: ["report", "transporters"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Update failed");
+    }
+  }
   const page = findPage(slug);
   const def = findReport(slug);
   const formDef = ENTRY_FORM_BY_SLUG.get(slug);
@@ -366,6 +385,19 @@ function PageView() {
                         {formatCell(row[c.key], c.numeric)}
                       </td>
                     ))}
+                    {isTransporters && (
+                      <td className="whitespace-nowrap border-b border-border px-4 py-2">
+                        {row["is_active"] === true || row["is_active"] === "true" ? (
+                          <Button size="sm" variant="outline" onClick={() => toggleTransporter(row, false)}>
+                            <PowerOff className="mr-1.5 h-3.5 w-3.5" /> Make Inactive
+                          </Button>
+                        ) : (
+                          <Button size="sm" className="bg-action text-action-foreground hover:bg-action/90" onClick={() => toggleTransporter(row, true)}>
+                            <Power className="mr-1.5 h-3.5 w-3.5" /> Make Active
+                          </Button>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

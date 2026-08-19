@@ -468,6 +468,7 @@ export const REPORTS: ReportDef[] = [
       txt("Email", "email"),
       num("Transporters Balance", "transporter_balance"),
       txt("Portal Status", "portal_status"),
+      txt("Status", "is_active"),
     ],
   },
   {
