@@ -146,7 +146,7 @@ function Sidebar() {
       >
         <Link
           to="/"
-          className="flex h-14 items-center justify-center bg-brand text-lg font-bold tracking-wide text-brand-foreground shadow-md"
+          className="flex h-14 items-center justify-center bg-gradient-to-br from-brand to-brand/85 text-lg font-bold tracking-wide text-brand-foreground shadow-md"
         >
           SG
         </Link>
@@ -220,10 +220,10 @@ function Sidebar() {
                   params={link.params}
                   onClick={() => setMenu(null)}
                   className={cn(
-                    "group flex items-center justify-between rounded-md border border-transparent px-3 py-2 text-[13.5px] transition-colors",
+                    "group flex items-center justify-between rounded-md border border-transparent px-3 py-2 text-[13.5px] transition-all duration-150",
                     isActive
-                      ? "border-brand/10 bg-brand font-bold text-brand-foreground"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+                      ? "border-brand/10 bg-brand font-bold text-brand-foreground shadow-md shadow-brand/20"
+                      : "text-sidebar-foreground/70 hover:translate-x-0.5 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
                   )}
                 >
                   <span className="truncate tracking-tight">{child.label}</span>
@@ -249,7 +249,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <Sidebar />
       {/* Content margin = only the narrow rail width; the flyout overlays on top */}
       <main className="min-h-screen p-4 md:p-6 lg:p-8" style={{ marginLeft: RAIL_WIDTH }}>
-        <div className="mx-auto max-w-[1600px]">{children}</div>
+        <div className="mx-auto max-w-[1600px] animate-in fade-in slide-in-from-bottom-2 duration-300">
+          {children}
+        </div>
       </main>
     </div>
   );

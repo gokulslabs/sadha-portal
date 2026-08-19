@@ -93,7 +93,7 @@ function StatCard({
     tone === "danger" ? "text-danger" : tone === "success" ? "text-success" : "text-action";
   const Icon = icon === "out" ? TrendingDown : icon === "in" ? TrendingUp : Wallet;
   return (
-    <div className="flex items-center gap-4 rounded-md bg-card px-5 py-6 shadow-panel">
+    <div className="flex items-center gap-4 rounded-md bg-card px-5 py-6 shadow-panel transition-shadow duration-200 hover:shadow-lift">
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-muted">
         <Icon className={`h-5 w-5 ${toneClass}`} />
       </span>
@@ -110,7 +110,7 @@ function StatCard({
 
 function MiniStat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-md bg-card px-4 py-5 shadow-panel">
+    <div className="flex items-center gap-3 rounded-md bg-card px-4 py-5 shadow-panel transition-shadow duration-200 hover:shadow-lift">
       <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-sm">₹</span>
       <div>
         <p className="text-sm text-muted-foreground">{label}</p>
