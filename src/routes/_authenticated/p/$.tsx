@@ -92,6 +92,12 @@ function calculateFormValues(slug: string, values: Record<string, string>, vehic
   } else if (slug === "add-boulders-entries") {
     set("amount", number("total_tons") * number("ton_per_rate"));
     gstTotal("amount", "gst", "gst_amount", "amount_with_gst");
+  } else if (slug === "add-excavators-entry") {
+    set("total_hour", number("end_hour") - number("start_hour"));
+    set("total_diesel_l", number("starting_diesel_l") + number("filling_diesel_l") - number("ending_diesel_l"));
+    set("diesel_amount", number("diesel_rate_per_liter") * number("filling_diesel_l"));
+    if (number("total_diesel_l") > 0) set("mileage", number("total_hour") / number("total_diesel_l"));
+    if (number("load_count") > 0) set("diesel_per_load", number("total_diesel_l") / number("load_count"));
   }
 
   const usesTransportCalculation = ["add-sales-entry", "add-rent-entry", "add-day-fees-entry", "add-boulders-entries"].includes(slug);
@@ -143,11 +149,13 @@ const FORM_LOOKUPS: Record<string, { table: string; column: string }> = {
   sales_unit: { table: "materials", column: "material_unit" },
   unit: { table: "materials", column: "material_unit" },
   client_name: { table: "clients", column: "client_name" },
+  client: { table: "clients", column: "client_name" },
   delivery_location: { table: "clients", column: "address" },
   vehicle: { table: "fleet_vehicles", column: "vehicle_number" },
   vehicle_number: { table: "fleet_vehicles", column: "vehicle_number" },
   driver: { table: "drivers", column: "driver_name" },
   driver_name: { table: "drivers", column: "driver_name" },
+  machine: { table: "machines", column: "machine_name" },
   choose_account: { table: "accounts", column: "display_name" },
 };
 

@@ -75,6 +75,44 @@ const REPORT_FOR_SECTION: FormSection = {
 
 export const ENTRY_FORMS: EntryFormDef[] = [
   {
+    slug: "add-excavators-entry",
+    title: "Excavators",
+    table: "excavator_entries",
+    sections: [
+      {
+        title: "Basic Details",
+        fields: [
+          t("entry_date", "Date", { type: "date" }),
+          t("business_transporters", "Business Transporters", { required: true }),
+          t("machine", "Machine", { required: true }),
+          t("dc_number", "DC Number"),
+          t("driver", "Driver"),
+        ],
+      },
+      {
+        title: "Hours/Diesel Details",
+        fields: [
+          t("client", "Client"),
+          t("start_hour", "Start Hour", { type: "number" }),
+          t("end_hour", "End Hour", { type: "number" }),
+          t("starting_diesel_l", "Starting Diesel (L)", { type: "number" }),
+          t("filling_diesel_l", "Filling Diesel (L)", { type: "number" }),
+          t("ending_diesel_l", "Ending Diesel (L)", { type: "number" }),
+          t("diesel_source", "Diesel Source", { type: "select", options: ["Own bunk", "Rent"] }),
+          t("diesel_rate_per_liter", "Diesel Rate Per Liter", { type: "number" }),
+          t("diesel_amount", "Diesel Amount", { type: "number", required: true, calculated: true }),
+          t("tank_status", "Tank Status", { type: "select", options: ["Refill", "Empty"] }),
+          t("total_hour", "Total Hour", { type: "number", calculated: true }),
+          t("total_diesel_l", "Total DIesel (L)", { type: "number", calculated: true }),
+          t("mileage", "Mileage", { type: "number", calculated: true }),
+          t("load_count", "Load count", { type: "number", calculated: true }),
+          t("diesel_per_load", "Diesel Per Load", { type: "number", calculated: true }),
+          t("remarks", "Remarks", { full: true }),
+        ],
+      },
+    ],
+  },
+  {
     slug: "add-sales-entry",
     title: "Add Sales Entry",
     table: "sales_entries",
@@ -334,6 +372,7 @@ export const ENTRY_FORM_BY_SLUG = new Map(ENTRY_FORMS.map((f) => [f.slug, f]));
 
 /** Map a report slug to its "add" form slug (when one exists). */
 export const REPORT_TO_FORM: Record<string, string> = {
+  "excavators-entries": "add-excavators-entry",
   "sales-entries": "add-sales-entry",
   "rent-entries": "add-rent-entry",
   "day-fees-entries": "add-day-fees-entry",
