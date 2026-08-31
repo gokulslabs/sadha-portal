@@ -4,9 +4,20 @@ import { supabase } from "@/integrations/supabase/client";
 type Row = Record<string, unknown>;
 
 async function fetchRows(table: string, columns = "*"): Promise<Row[]> {
-  const { data, error } = await supabase.from(table as never).select(columns).limit(100000);
-  if (error) throw error;
-  return (data ?? []) as Row[];
+  // Supabase limits a response to 1,000 rows even when a larger `.limit()` is
+  // requested. Dashboard aggregates must use every operational row.
+  const pageSize = 1_000;
+  const rows: Row[] = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabase
+      .from(table as never)
+      .select(columns)
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    const page = (data ?? []) as Row[];
+    rows.push(...page);
+    if (page.length < pageSize) return rows;
+  }
 }
 
 async function countRows(table: string): Promise<number> {
