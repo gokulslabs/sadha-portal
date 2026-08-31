@@ -98,6 +98,12 @@ function calculateFormValues(slug: string, values: Record<string, string>, vehic
     set("diesel_amount", number("diesel_rate_per_liter") * number("filling_diesel_l"));
     if (number("total_diesel_l") > 0) set("mileage", number("total_hour") / number("total_diesel_l"));
     if (number("load_count") > 0) set("diesel_per_load", number("total_diesel_l") / number("load_count"));
+  } else if (slug === "add-excavators-daily-entry") {
+    set("amount", number("ton_per_day") * number("ton_per_rate"));
+    set("gst_amount", number("amount") * number("gst") / 100);
+    set("amount_with_gst", number("amount") + number("gst_amount"));
+    set("diesel_amount", number("diesel_liters") * number("diesel_rate"));
+    set("profit", number("amount_with_gst") - number("diesel_amount"));
   }
 
   const usesTransportCalculation = ["add-sales-entry", "add-rent-entry", "add-day-fees-entry", "add-boulders-entries"].includes(slug);

@@ -75,6 +75,33 @@ const REPORT_FOR_SECTION: FormSection = {
 
 export const ENTRY_FORMS: EntryFormDef[] = [
   {
+    slug: "add-excavators-daily-entry",
+    title: "Excavators Daily Entries",
+    table: "excavator_daily_entries",
+    sections: [{
+      title: "",
+      fields: [
+        t("zoho_id", "Daily Entries ID"),
+        t("entry_date", "Date", { type: "date" }),
+        t("business_transporters", "Business Transporters", { required: true }),
+        t("client", "Client"),
+        t("loads_per_day", "Loads /Day", { type: "number", required: true }),
+        t("ton_per_day", "Ton / Day", { type: "number", required: true }),
+        t("ton_per_rate", "Ton Per Rate", { type: "number", required: true }),
+        t("amount", "Amount", { type: "number", required: true }),
+        t("gst", "GST", { type: "select", required: true, options: ["0", "5", "12", "18", "28"] }),
+        t("gst_amount", "Gst Amount", { type: "number" }),
+        t("amount_with_gst", "Amount With GST", { type: "number", required: true }),
+        t("diesel_source", "Diesel Source", { type: "select", options: ["Own bunk", "Rent"] }),
+        t("bunk_reference", "Bunk Reference"),
+        t("diesel_liters", "Diesel Liters", { type: "number", required: true }),
+        t("diesel_rate", "Diesel Rate", { type: "number", required: true }),
+        t("diesel_amount", "Diesel Amount", { type: "number" }),
+        t("profit", "Profit", { type: "number" }),
+      ],
+    }],
+  },
+  {
     slug: "add-excavators-entry",
     title: "Excavators",
     table: "excavator_entries",
@@ -374,6 +401,7 @@ export const ENTRY_FORM_BY_SLUG = new Map(ENTRY_FORMS.map((f) => [f.slug, f]));
 /** Map a report slug to its "add" form slug (when one exists). */
 export const REPORT_TO_FORM: Record<string, string> = {
   "excavators-entries": "add-excavators-entry",
+  "excavators-daily-entries": "add-excavators-daily-entry",
   "sales-entries": "add-sales-entry",
   "rent-entries": "add-rent-entry",
   "day-fees-entries": "add-day-fees-entry",
