@@ -75,6 +75,39 @@ const REPORT_FOR_SECTION: FormSection = {
 
 export const ENTRY_FORMS: EntryFormDef[] = [
   {
+    slug: "add-excavators-rent-entry",
+    title: "Excavators Rent Entries",
+    table: "excavator_rent_entries",
+    sections: [
+      { title: "Basic Details", fields: [
+        t("entry_date", "Date", { type: "date" }),
+        t("business_transporters", "Business Transporters", { required: true }),
+        t("machine", "Machine", { required: true }),
+        t("dc_number", "DC Number"),
+        t("driver", "Driver"),
+      ]},
+      { title: "Rent Hours/Diesel Details", fields: [
+        t("client", "Client"),
+        t("start_hour", "Start Hour", { type: "number" }),
+        t("end_hour", "End Hour", { type: "number" }),
+        t("total_hour", "Total Hour", { type: "number", calculated: true }),
+        t("rate_per_hour", "Rate Per Hour", { type: "number" }),
+        t("amount", "Amount", { type: "number", calculated: true }),
+        t("gst", "GST", { type: "select", options: ["0", "5", "12", "18", "28"] }),
+        t("gst_amount", "Gst Amount", { type: "number", calculated: true }),
+        t("amount_with_gst", "Amount With GST", { type: "number", calculated: true }),
+        t("diesel_source", "Diesel Source", { type: "select", options: ["Own bunk", "Rent"] }),
+        t("diesel_filling_l", "Diesel Filling (L)", { type: "number" }),
+        t("diesel_rate_per_liter", "Diesel Rate Per Liter", { type: "number" }),
+        t("diesel_amount", "Diesel Amount", { type: "number", required: true, calculated: true }),
+        t("tank_status", "Tank Status", { type: "select", options: ["Refill", "Empty"] }),
+        t("bunk_reference", "Bunk Reference"),
+        t("mileage", "Mileage", { type: "number", calculated: true }),
+        t("remarks", "Remarks", { full: true }),
+      ]},
+    ],
+  },
+  {
     slug: "add-excavators-daily-entry",
     title: "Excavators Daily Entries",
     table: "excavator_daily_entries",
@@ -402,6 +435,7 @@ export const ENTRY_FORM_BY_SLUG = new Map(ENTRY_FORMS.map((f) => [f.slug, f]));
 export const REPORT_TO_FORM: Record<string, string> = {
   "excavators-entries": "add-excavators-entry",
   "excavators-daily-entries": "add-excavators-daily-entry",
+  "excavators-rent-entries": "add-excavators-rent-entry",
   "sales-entries": "add-sales-entry",
   "rent-entries": "add-rent-entry",
   "day-fees-entries": "add-day-fees-entry",
