@@ -111,6 +111,10 @@ function calculateFormValues(slug: string, values: Record<string, string>, vehic
     set("amount_with_gst", number("amount") + number("gst_amount"));
     set("diesel_amount", number("diesel_filling_l") * number("diesel_rate_per_liter"));
     if (number("diesel_filling_l") > 0) set("mileage", number("total_hour") / number("diesel_filling_l"));
+  } else if (slug === "add-excavators-diesel-entry") {
+    set("total_km", number("to_km") - number("from_km"));
+    set("diesel_amount", number("diesel_liters") * number("diesel_rate_per_liter"));
+    if (number("diesel_liters") > 0) set("mileage", number("total_km") / number("diesel_liters"));
   }
 
   const usesTransportCalculation = ["add-sales-entry", "add-rent-entry", "add-day-fees-entry", "add-boulders-entries"].includes(slug);
@@ -169,6 +173,7 @@ const FORM_LOOKUPS: Record<string, { table: string; column: string }> = {
   driver: { table: "drivers", column: "driver_name" },
   driver_name: { table: "drivers", column: "driver_name" },
   machine: { table: "machines", column: "machine_name" },
+  vehicle: { table: "fleet_vehicles", column: "vehicle_number" },
   choose_account: { table: "accounts", column: "display_name" },
 };
 
