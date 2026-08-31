@@ -148,12 +148,18 @@ export function useDashboardData() {
       // the Income/Expense transaction direction.
       const fMap = new Map<string, { income: number; expense: number }>();
       for (const r of incomeExpense) {
+        // Zoho's dashboard filters on the Category lookup (for example,
+        // Category == "Vendor Payment"), not on the Payment For field.
+        // Older imports may not have a category, so retain Payment For as a
+        // backwards-compatible fallback for those rows.
+        const category = String(r["category"] ?? "").trim().toLowerCase();
         const paymentFor = String(r["payment_for"] ?? "").trim().toLowerCase();
-        const key = paymentFor.includes("vendor") ? "Vendor Payment"
-          : paymentFor.includes("client") ? "Client Payment"
-            : paymentFor.includes("driver") ? "Driver Payment"
-              : paymentFor.includes("diesel") ? "Diesel Payment"
-                : paymentFor.includes("own") ? "Own" : "Other";
+        const groupingValue = category || paymentFor;
+        const key = groupingValue.includes("vendor") ? "Vendor Payment"
+          : groupingValue.includes("client") ? "Client Payment"
+            : groupingValue.includes("driver") ? "Driver Payment"
+              : groupingValue.includes("diesel") ? "Diesel Payment"
+                : groupingValue.includes("own") ? "Own" : "Other";
         const cur = fMap.get(key) ?? { income: 0, expense: 0 };
         cur.income += Number(r["income"]) || 0;
         cur.expense += Number(r["expense"]) || 0;
