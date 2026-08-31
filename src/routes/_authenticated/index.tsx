@@ -78,8 +78,8 @@ type QuickActionKind = "client" | "diesel" | "vendor" | "driver";
 
 const QUICK_ACTIONS: { label: string; kind: QuickActionKind }[] = [
   { label: "Add Client Income", kind: "client" },
-  { label: "Add Diesel Amount", kind: "diesel" },
   { label: "Add Vendor Expense", kind: "vendor" },
+  { label: "Add Diesel Amount", kind: "diesel" },
   { label: "Add Driver Expense", kind: "driver" },
 ];
 
@@ -226,8 +226,16 @@ function TransporterDonut({
   }
   const pct = (v: number) => (total > 0 ? `${((v / total) * 100).toFixed(1)}%` : "0%");
   return (
-    <div className="flex h-[400px] items-center gap-4">
-      <div className="relative h-[280px] w-[280px] shrink-0">
+    <div className="flex h-[400px] flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-2 text-sm">
+        {data.map((entry, i) => (
+          <span key={entry.name} className="flex items-center gap-2 text-foreground">
+            <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+            <span>{entry.name}</span>
+          </span>
+        ))}
+      </div>
+      <div className="relative mx-auto h-[310px] w-full max-w-[390px] shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -254,21 +262,8 @@ function TransporterDonut({
           <p className="text-xs text-muted-foreground">Total Balance</p>
         </div>
       </div>
-      <div className="min-w-0 flex-1 space-y-2">
-        {data.map((entry, i) => (
-          <div key={entry.name} className="flex items-center justify-between gap-2 text-sm">
-            <span className="flex items-center gap-2 text-foreground">
-              <span
-                className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}
-              />
-              <span className="truncate">{entry.name}</span>
-            </span>
-            <span className="whitespace-nowrap text-xs text-muted-foreground">
-              {inr0(entry.value)} · {pct(entry.value)}
-            </span>
-          </div>
-        ))}
+      <div className="flex flex-wrap justify-center gap-x-4 text-xs text-muted-foreground">
+        {data.map((entry) => <span key={entry.name}>{inr0(entry.value)} · {pct(entry.value)}</span>)}
       </div>
     </div>
   );
@@ -305,13 +300,18 @@ function Dashboard() {
   const [quickAction, setQuickAction] = useState<QuickActionKind | null>(null);
 
   const transporters = data?.transporters ?? [];
+  const transporterChartOrder = ["DK TRADERS", "DKC", "PGS TRANS", "SADHA GROUPS", "SADHA INFRA"];
+  const transporterChart = [...transporters].sort((a, b) => transporterChartOrder.indexOf(a.name) - transporterChartOrder.indexOf(b.name));
+  const transporterCards = ["SADHA INFRA", "DK TRADERS", "SADHA GROUPS", "DKC"]
+    .map((name) => transporters.find((item) => item.name === name))
+    .filter((item): item is { name: string; value: number } => Boolean(item));
   const financeByType = data?.finance.byType ?? [];
   const financeChart = [...financeByType]
     .filter((item) => item.name !== "Diesel Payment")
     .sort((a, b) => ["Vendor Payment", "Client Payment", "Driver Payment", "Own"].indexOf(a.name) - ["Vendor Payment", "Client Payment", "Driver Payment", "Own"].indexOf(b.name));
 
-  const pieData = transporters.length
-    ? transporters
+  const pieData = transporterChart.length
+    ? transporterChart
     : [{ name: "No data", value: 0 }];
 
   if (isLoading) {
@@ -334,8 +334,8 @@ function Dashboard() {
           <SectionBar title="Balance Overview" icon="chart" />
           <div className="grid gap-4 sm:grid-cols-2">
             <StatCard label="Total Client Balance" value={inr(data?.totalClientBalance ?? 0)} slug="clients" />
-            <StatCard label="Total Diesel Balance" value={inr(data?.totalDieselBalance ?? 0)} slug="diesel-entries" />
             <StatCard label="Vendor Balance" value={inr(data?.vendorBalance ?? 0)} tone="danger" icon="out" slug="vendors" />
+            <StatCard label="Total Diesel Balance" value={inr(data?.totalDieselBalance ?? 0)} slug="diesel-entries" />
             <StatCard label="Driver Balance" value={inr(data?.driverBalance ?? 0)} tone="danger" icon="out" slug="drivers" />
           </div>
         </div>
@@ -352,13 +352,13 @@ function Dashboard() {
         <SectionBar title="Transporter Wise Accounts Overview" icon="chart" />
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="rounded-md bg-card p-4 shadow-panel">
-            <TransporterDonut data={transporters} total={data?.transporterTotal ?? 0} />
+            <TransporterDonut data={pieData} total={data?.transporterTotal ?? 0} />
           </div>
           <div className="grid content-start gap-4">
             <MiniStat label="Overall Current Balance" value={inr(data?.transporterTotal ?? 0)} />
             <div className="grid gap-4 sm:grid-cols-2">
-              {transporters.slice(0, 4).map((t) => (
-                <MiniStat key={t.name} label={t.name} value={inr(t.value)} slug="transporters" />
+              {transporterCards.map((t) => (
+                <MiniStat key={t.name} label={t.name.replace(/\b\w/g, (letter) => letter.toUpperCase())} value={inr(t.value)} slug="transporters" />
               ))}
               {transporters.length === 0 && (
                 <MiniStat label="No transporter data" value="—" />
