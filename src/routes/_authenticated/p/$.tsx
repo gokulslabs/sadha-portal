@@ -99,7 +99,10 @@ function calculateFormValues(slug: string, values: Record<string, string>, vehic
     // Zoho labels this field as the sum of the child Vehicle Expense lines.
     // Its displayed hint defines Driver Net Total as (Padi + Food + Shed + Veh Exp) - Advance.
     set("total_vehicle_expense", vehicleDetailTotal);
-    set("driver_net_total", number("driver_padi") + number("driver_food_amount") + number("shed_work_amount") + number("total_vehicle_expense") - number("driver_advance"));
+    const boulderDriverNet = slug === "add-boulders-entries";
+    set("driver_net_total", boulderDriverNet
+      ? number("driver_padi") + number("driver_food_amount") - number("driver_advance")
+      : number("driver_padi") + number("driver_food_amount") + number("shed_work_amount") + number("total_vehicle_expense") - number("driver_advance"));
     if ("from_km" in values || "to_km" in values) set("total_km", number("to_km") - number("from_km"));
     if ("diesel_liters" in values && number("diesel_liters") > 0) set("mileage", number("total_km") / number("diesel_liters"));
     set("diesel_amount", number("diesel_rate_per_liter") * number("diesel_liters"));
