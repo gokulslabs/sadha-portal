@@ -78,8 +78,8 @@ type QuickActionKind = "client" | "diesel" | "vendor" | "driver";
 
 const QUICK_ACTIONS: { label: string; kind: QuickActionKind }[] = [
   { label: "Add Client Income", kind: "client" },
-  { label: "Add Vendor Expense", kind: "vendor" },
   { label: "Add Diesel Amount", kind: "diesel" },
+  { label: "Add Vendor Expense", kind: "vendor" },
   { label: "Add Driver Expense", kind: "driver" },
 ];
 
@@ -334,8 +334,8 @@ function Dashboard() {
           <SectionBar title="Balance Overview" icon="chart" />
           <div className="grid gap-4 sm:grid-cols-2">
             <StatCard label="Total Client Balance" value={inr(data?.totalClientBalance ?? 0)} slug="clients" />
-            <StatCard label="Vendor Balance" value={inr(data?.vendorBalance ?? 0)} tone="danger" icon="out" slug="vendors" />
             <StatCard label="Total Diesel Balance" value={inr(data?.totalDieselBalance ?? 0)} slug="diesel-entries" />
+            <StatCard label="Vendor Balance" value={inr(data?.vendorBalance ?? 0)} tone="danger" icon="out" slug="vendors" />
             <StatCard label="Driver Balance" value={inr(data?.driverBalance ?? 0)} tone="danger" icon="out" slug="drivers" />
           </div>
         </div>
@@ -412,10 +412,10 @@ function Dashboard() {
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="grid gap-4 sm:grid-cols-2">
             <MiniStat label="Today Sales" value={String(data?.today.salesCount ?? 0)} slug="sales-entries" />
-            <MiniStat label="Purchase" value={inr(data?.today.purchase ?? 0)} tone="text-danger" slug="sales-entries" />
             <MiniStat label="Sales" value={inr(data?.today.salesIncome ?? 0)} tone="text-success" slug="sales-entries" />
-            <MiniStat label="Diesel" value={inr(data?.today.diesel ?? 0)} tone="text-danger" slug="diesel-entries" />
             <MiniStat label="Driver" value={inr(data?.today.driver ?? 0)} tone="text-danger" slug="drivers" />
+            <MiniStat label="Purchase" value={inr(data?.today.purchase ?? 0)} tone="text-danger" slug="sales-entries" />
+            <MiniStat label="Diesel" value={inr(data?.today.diesel ?? 0)} tone="text-danger" slug="diesel-entries" />
             <MiniStat label="Profit" value={inr(data?.today.profit ?? 0)} tone="text-success" />
           </div>
           <PerformanceChart
