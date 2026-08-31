@@ -159,9 +159,9 @@ export function useDashboardData() {
         cur.expense += Number(r["expense"]) || 0;
         fMap.set(key, cur);
       }
-      const financeOrder = ["Client Payment", "Diesel Payment", "Vendor Payment", "Driver Payment", "Own", "Other"];
-      const byType = [...fMap.entries()]
-        .map(([name, v]) => ({ name, ...v }))
+      const financeOrder = ["Client Payment", "Diesel Payment", "Vendor Payment", "Driver Payment", "Own"];
+      const byType = ["Client Payment", "Diesel Payment", "Vendor Payment", "Driver Payment", "Own"]
+        .map((name) => ({ name, ...(fMap.get(name) ?? { income: 0, expense: 0 }) }))
         .sort((a, b) => financeOrder.indexOf(a.name) - financeOrder.indexOf(b.name));
 
       const todaySalesRows = sales.filter((r) => isToday(r["entry_date"]));

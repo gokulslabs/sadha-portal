@@ -306,6 +306,9 @@ function Dashboard() {
 
   const transporters = data?.transporters ?? [];
   const financeByType = data?.finance.byType ?? [];
+  const financeChart = [...financeByType]
+    .filter((item) => item.name !== "Diesel Payment")
+    .sort((a, b) => ["Vendor Payment", "Client Payment", "Driver Payment", "Own"].indexOf(a.name) - ["Vendor Payment", "Client Payment", "Driver Payment", "Own"].indexOf(b.name));
 
   const pieData = transporters.length
     ? transporters
@@ -372,7 +375,7 @@ function Dashboard() {
           <div className="grid gap-4 sm:grid-cols-2">
             <StatCard label="Overall Income" value={inr(data?.finance.income ?? 0)} tone="success" icon="in" />
             <StatCard label="Overall Expense" value={inr(data?.finance.expense ?? 0)} tone="danger" icon="out" />
-            {financeByType.map((f) => (
+            {financeByType.filter((f) => f.name !== "Own").map((f) => (
               <StatCard
                 key={f.name}
                 label={f.name}
@@ -388,7 +391,7 @@ function Dashboard() {
             </button>
             <div className="h-[360px] pt-6">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={financeByType.map((item) => ({ ...item, name: item.name.replace(/ Payment$/, "") }))}>
+                <BarChart data={financeChart.map((item) => ({ ...item, name: item.name.replace(/ Payment$/, "") }))}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                   <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} />
                   <YAxis tickLine={false} axisLine={false} fontSize={12} width={70} />
