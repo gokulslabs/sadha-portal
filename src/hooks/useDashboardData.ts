@@ -44,7 +44,14 @@ function normalizeDate(value: unknown): string | null {
 function isToday(value: unknown): boolean {
   const n = normalizeDate(value);
   if (!n) return false;
-  const today = new Date().toISOString().slice(0, 10);
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+  const today = `${part("year")}-${part("month")}-${part("day")}`;
   return n === today;
 }
 
