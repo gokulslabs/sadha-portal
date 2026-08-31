@@ -96,14 +96,16 @@ function calculateFormValues(slug: string, values: Record<string, string>, vehic
 
   const usesTransportCalculation = ["add-sales-entry", "add-rent-entry", "add-day-fees-entry", "add-boulders-entries"].includes(slug);
   if (usesTransportCalculation) {
-    set("total_vehicle_expense", number("driver_padi") + number("driver_food_amount") + number("shed_work_amount") + vehicleDetailTotal);
-    set("driver_net_total", number("total_vehicle_expense") - number("driver_advance"));
+    // Zoho labels this field as the sum of the child Vehicle Expense lines.
+    // Its displayed hint defines Driver Net Total as (Padi + Food + Shed + Veh Exp) - Advance.
+    set("total_vehicle_expense", vehicleDetailTotal);
+    set("driver_net_total", number("driver_padi") + number("driver_food_amount") + number("shed_work_amount") + number("total_vehicle_expense") - number("driver_advance"));
     if ("from_km" in values || "to_km" in values) set("total_km", number("to_km") - number("from_km"));
     if ("diesel_liters" in values && number("diesel_liters") > 0) set("mileage", number("total_km") / number("diesel_liters"));
     set("diesel_amount", number("diesel_rate_per_liter") * number("diesel_liters"));
-    set("total_trip_expense", number("driver_net_total") + number("diesel_amount") + tripDetailTotal);
+    set("total_trip_expense", tripDetailTotal);
     const revenue = number("sales_net_total") || number("rent_amount_with_gst") || number("amount_with_gst");
-    set("profit", revenue - number("purchase_net_total") - number("total_trip_expense"));
+    set("profit", revenue - number("purchase_net_total") - number("driver_net_total") - number("total_trip_expense"));
   }
   return values;
 }
