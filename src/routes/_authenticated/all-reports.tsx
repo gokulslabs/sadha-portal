@@ -1,130 +1,46 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { FileText, Search, ChevronRight } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { NAV } from "@/lib/nav";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useReportCounts } from "@/hooks/useReportData";
+import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/_authenticated/all-reports")({
-  head: () => ({
-    title: "All Reports | Sadha Groups Portal",
-    meta: [
-      {
-        name: "description",
-        content: "Searchable index of all operational and financial reports for Sadha Groups.",
-      },
-    ],
-  }),
+  head: () => ({ title: "Search Report | Sadha Groups Portal" }),
   component: AllReports,
 });
 
-const SPECIAL_LINKS: Record<string, string> = {
-  dashboard: "/",
-  "all-reports": "/all-reports",
-  tyre: "/tyre",
-  "tyre-report": "/tyre-report",
-  "tyre-module": "/tyre-module",
-};
-
-function linkFor(slug: string): { to: string; params: Record<string, string> } {
-  if (slug in SPECIAL_LINKS) return { to: SPECIAL_LINKS[slug]!, params: {} };
-  return { to: "/p/$", params: { _splat: slug } };
-}
+const SOURCE_REPORTS = NAV
+  .filter((section) => section.label !== "Dashboard" && section.label !== "Tyres")
+  .flatMap((section) => (section.children ?? [])
+    .filter((child) => !child.label.startsWith("Add "))
+    .map((child) => ({ ...child, section: section.label })));
 
 function AllReports() {
-  const { data: counts, isLoading } = useReportCounts();
-  const [query, setQuery] = useState("");
-  const q = query.trim().toLowerCase();
+  const navigate = useNavigate();
+  const [btType, setBtType] = useState<"All" | "Specific">("All");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [report, setReport] = useState("");
+  const [transporter, setTransporter] = useState("");
 
-  const countMap = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const c of counts ?? []) m.set(c.slug, c.count);
-    return m;
-  }, [counts]);
+  function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!report) return;
+    void navigate({ to: "/p/$", params: { _splat: report }, search: { from, to, btType, transporter } as never });
+  }
 
-  // Flatten nav into searchable report list, retaining section grouping.
-  const sections = NAV.filter((s) => s.label !== "Dashboard").map((section) => {
-    const children = (section.children ?? [])
-      .filter((c) => {
-        if (!q) return true;
-        return (
-          c.label.toLowerCase().includes(q) || section.label.toLowerCase().includes(q)
-        );
-      })
-      .map((c) => ({ ...c, parent: section.label }));
-    return { label: section.label, children };
-  }).filter((s) => s.children.length > 0);
-
-  const total = counts?.reduce((s, c) => s + c.count, 0) ?? 0;
-
-  return (
-    <AppShell>
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-card px-5 py-4 shadow-panel">
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground">All Reports</h1>
-            <p className="text-xs text-muted-foreground">
-              {counts?.length ?? 0} report types · {total.toLocaleString("en-IN")} total records
-            </p>
-          </div>
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search reports…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="h-9 w-64 pl-8"
-            />
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-40 w-full" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {sections.map((section) => (
-              <div key={section.label} className="rounded-md bg-card shadow-panel">
-                <div className="border-b border-border px-4 py-3">
-                  <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                    {section.label}
-                  </h2>
-                </div>
-                <div className="p-2">
-                  {section.children.map((report) => {
-                    const link = linkFor(report.slug);
-                    const count = countMap.get(report.slug) ?? 0;
-                    return (
-                      <Link
-                        key={report.slug}
-                        to={link.to}
-                        params={link.params}
-                        className="group flex items-center justify-between rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
-                      >
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-3.5 w-3.5 opacity-40 group-hover:opacity-100" />
-                          <span>{report.label}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs tabular-nums text-muted-foreground/70">
-                            {count.toLocaleString("en-IN")}
-                          </span>
-                          <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-40" />
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </AppShell>
-  );
+  return <AppShell><div className="mx-auto max-w-3xl pt-8"><div className="rounded-md bg-card shadow-panel">
+    <div className="border-b border-border px-6 py-4"><h1 className="text-lg font-semibold text-foreground">Search Report</h1></div>
+    <form className="space-y-6 p-6" onSubmit={submit}>
+      <fieldset className="space-y-2"><legend className="text-sm font-medium text-foreground">BT Type</legend><div className="flex gap-6">
+        {(["All", "Specific"] as const).map((value) => <label key={value} className="flex items-center gap-2 text-sm"><input type="radio" checked={btType === value} onChange={() => setBtType(value)} />{value}</label>)}
+      </div></fieldset>
+      {btType === "Specific" && <div className="space-y-1.5"><Label htmlFor="specific-transporter">Business Transporter<span className="text-destructive">*</span></Label><Input id="specific-transporter" value={transporter} onChange={(event) => setTransporter(event.target.value)} required placeholder="Enter transporter name" /></div>}
+      <div className="grid gap-5 sm:grid-cols-2"><div className="space-y-1.5"><Label htmlFor="report-from">Report From<span className="text-destructive">*</span></Label><Input id="report-from" type="date" value={from} onChange={(event) => setFrom(event.target.value)} required /></div><div className="space-y-1.5"><Label htmlFor="report-to">Report To<span className="text-destructive">*</span></Label><Input id="report-to" type="date" value={to} onChange={(event) => setTo(event.target.value)} required /></div></div>
+      <div className="space-y-1.5"><Label htmlFor="report-for">Report For<span className="text-destructive">*</span></Label><select id="report-for" value={report} onChange={(event) => setReport(event.target.value)} required className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm"><option value="">-Select-</option>{SOURCE_REPORTS.map((item) => <option key={item.slug} value={item.slug}>{item.section} — {item.label}</option>)}</select></div>
+      <Button type="submit">Submit</Button>
+    </form>
+  </div></div></AppShell>;
 }

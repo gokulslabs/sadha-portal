@@ -4,13 +4,28 @@ import { REPORTS, type ReportDef } from "@/lib/reports";
 
 export type ReportRow = Record<string, unknown>;
 
+function sourceDateValue(value: unknown): number {
+  const text = String(value ?? "").trim();
+  if (!text) return 0;
+  const native = Date.parse(text);
+  if (Number.isFinite(native)) return native;
+  // Zoho commonly emits 31-Aug-2026 and 31-Aug-2026 16:09:57.
+  const match = text.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (!match) return 0;
+  const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+  const month = months.indexOf(match[2]!.toLowerCase());
+  return month < 0 ? 0 : new Date(Number(match[3]), month, Number(match[1]), Number(match[4] ?? 0), Number(match[5] ?? 0), Number(match[6] ?? 0)).getTime();
+}
+
 export function useReportRows(def?: ReportDef) {
   return useQuery({
     queryKey: ["report", def?.slug ?? "none"],
     enabled: Boolean(def),
     queryFn: async (): Promise<ReportRow[]> => {
       if (!def) return [];
-      const select = def.columns.map((c) => c.key).join(",");
+      // `id` is kept out of the visible registry, but is needed for Zoho-style
+      // inline edit/save behaviour in every report grid.
+      const select = ["id", ...def.columns.map((c) => c.key)].join(",");
       // Generic table access — table name is derived from the trusted registry.
       // Supabase caps SELECT at 1000 rows (db-max-rows), so paginate over all
       // records to avoid silently truncating larger reports (e.g. rent entries).
@@ -26,6 +41,8 @@ export function useReportRows(def?: ReportDef) {
         all.push(...rows);
         if (rows.length < PAGE) break;
       }
+      const dateColumn = def.columns.find((column) => ["entry_date", "date_time", "added_time"].includes(column.key));
+      if (dateColumn) all.sort((a, b) => sourceDateValue(b[dateColumn.key]) - sourceDateValue(a[dateColumn.key]));
       return all;
     },
   });

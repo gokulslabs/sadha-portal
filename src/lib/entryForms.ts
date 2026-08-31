@@ -63,6 +63,15 @@ const DIESEL_SECTION: FormSection = {
   ],
 };
 
+const REPORT_FOR_SECTION: FormSection = {
+  title: "Report For",
+  fields: [
+    t("report_for", "Report For"),
+    t("report_from", "Report From", { type: "date" }),
+    t("report_to", "Report To", { type: "date" }),
+  ],
+};
+
 export const ENTRY_FORMS: EntryFormDef[] = [
   {
     slug: "add-sales-entry",
@@ -131,6 +140,7 @@ export const ENTRY_FORMS: EntryFormDef[] = [
         title: "Profit",
         fields: [t("profit", "Profit", { type: "number" })],
       },
+      REPORT_FOR_SECTION,
     ],
   },
   {
@@ -147,6 +157,7 @@ export const ENTRY_FORMS: EntryFormDef[] = [
           t("purchase_from", "Purchase From", { required: true }),
           t("quantity", "Quantity", { type: "number", required: true }),
           t("dc_no", "DC Number", { required: true }),
+          t("contact_number", "Contact Number"),
           t("material", "Material", { required: true }),
           t("unit", "Unit", { required: true }),
         ],
@@ -159,11 +170,14 @@ export const ENTRY_FORMS: EntryFormDef[] = [
           t("rent_quantity", "Rent Quantity", { type: "number", required: true }),
           t("rent_price", "Rent Price (Per Unit/Ton)", { type: "number", required: true }),
           t("rent_amount", "Rent Amount", { type: "number", required: true }),
+          t("rent_gst", "GST", { type: "number" }),
+          t("rent_gst_amount", "Rent GST Amount", { type: "number" }),
           t("rent_amount_with_gst", "Rent Amount with GST", { type: "number" }),
         ],
       },
       TRANSPORT_SECTION,
       DIESEL_SECTION,
+      REPORT_FOR_SECTION,
     ],
   },
   {
@@ -180,6 +194,7 @@ export const ENTRY_FORMS: EntryFormDef[] = [
           t("purchase_from", "Purchase From", { required: true }),
           t("quantity", "Quantity", { type: "number", required: true }),
           t("dc_number", "DC Number", { required: true }),
+          t("contact_number", "Contact Number"),
           t("material", "Material", { required: true }),
           t("unit", "Unit", { required: true }),
         ],
@@ -191,6 +206,8 @@ export const ENTRY_FORMS: EntryFormDef[] = [
           t("delivery_location", "Delivery Location"),
           t("total_load", "Total load", { type: "number", required: true }),
           t("per_day_amount", "Per Day amount", { type: "number", required: true }),
+          t("gst", "GST", { type: "number" }),
+          t("gst_amount", "GST Amount", { type: "number" }),
           t("amount_with_gst", "Amount with GST", { type: "number" }),
         ],
       },
@@ -204,6 +221,7 @@ export const ENTRY_FORMS: EntryFormDef[] = [
           t("shed_work_amount", "Shed Work Amount", { type: "number" }),
           t("total_vehicle_expense", "Total Vehicle Expense", { type: "number" }),
           t("driver_advance", "Driver Advance", { type: "number" }),
+          t("choose_account", "Choose Account"),
           t("driver_net_total", "Driver Net Total", { type: "number" }),
         ],
       },
@@ -220,6 +238,7 @@ export const ENTRY_FORMS: EntryFormDef[] = [
         title: "Profit",
         fields: [t("profit", "Profit", { type: "number" })],
       },
+      REPORT_FOR_SECTION,
     ],
   },
   {
@@ -289,6 +308,7 @@ export const ENTRY_FORMS: EntryFormDef[] = [
           t("profit", "Profit", { type: "number" }),
         ],
       },
+      REPORT_FOR_SECTION,
     ],
   },
 ];
