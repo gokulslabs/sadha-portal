@@ -182,6 +182,11 @@ export function useDashboardData() {
       const directDiesel = (sourceIsRent: boolean) =>
         todayDieselRows
           .filter((r) => {
+            // Zoho's Direct Diesel cards include only entries whose "From"
+            // selector is Direct; `rec_from` is the imported field that holds
+            // that value in the local schema.
+            const from = String(r["rec_from"] ?? "").trim().toLowerCase();
+            if (from !== "direct") return false;
             const src = String(r["source"] ?? "");
             const isRent = isRentSource(src);
             return sourceIsRent ? isRent : !isRent;
