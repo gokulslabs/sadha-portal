@@ -61,12 +61,14 @@ export type DashboardData = {
 
   today: {
     sales: number;
+    salesCount: number;
     purchase: number;
     salesIncome: number;
     diesel: number;
     driver: number;
     profit: number;
     rent: number;
+    rentCount: number;
     rentDieselOwn: number;
     rentDieselRent: number;
     rentDriver: number;
@@ -75,7 +77,10 @@ export type DashboardData = {
     directDieselOwn: number;
     excavatorLoads: number;
     excavatorTons: number;
+    excavatorTonRate: number;
     excavatorAmount: number;
+    excavatorDiesel: number;
+    excavatorProfit: number;
   };
 
   counts: { clients: number; materials: number; drivers: number; vehicles: number; machines: number; vendors: number; transporters: number; tyres: number };
@@ -173,12 +178,14 @@ export function useDashboardData() {
 
         today: {
           sales: sum(todaySalesRows, "sales_net_total"),
+          salesCount: todaySalesRows.length,
           purchase: sum(todaySalesRows, "purchase_net_total"),
           salesIncome: sum(todaySalesRows, "sales_net_total"),
           diesel: sum(todaySalesRows, "diesel_amount"),
           driver: sum(todaySalesRows, "driver_net_total"),
           profit: sum(todaySalesRows, "profit"),
-          rent: sum(todayRentRows, "rent_amount"),
+          rent: sum(todayRentRows, "rent_amount_with_gst"),
+          rentCount: todayRentRows.length,
           rentDieselOwn: rentBySource(false),
           rentDieselRent: rentBySource(true),
           rentDriver: sum(todayRentRows, "driver_net_total"),
@@ -187,7 +194,10 @@ export function useDashboardData() {
           directDieselOwn: directDiesel(false),
           excavatorLoads: sum(todayExcavatorRows, "loads_per_day"),
           excavatorTons: sum(todayExcavatorRows, "ton_per_day"),
+          excavatorTonRate: sum(todayExcavatorRows, "ton_per_rate"),
           excavatorAmount: sum(todayExcavatorRows, "amount_with_gst"),
+          excavatorDiesel: sum(todayExcavatorRows, "diesel_amount"),
+          excavatorProfit: sum(todayExcavatorRows, "profit"),
         },
 
         counts: {

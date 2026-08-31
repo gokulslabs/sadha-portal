@@ -375,7 +375,7 @@ function Dashboard() {
         <SectionBar title="Today Sales Performance" icon="chart" />
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="grid gap-4 sm:grid-cols-2">
-            <MiniStat label="Today Sales" value={inr(data?.today.sales ?? 0)} />
+            <MiniStat label="Today Sales" value={String(data?.today.salesCount ?? 0)} />
             <MiniStat label="Purchase" value={inr(data?.today.purchase ?? 0)} tone="text-danger" />
             <MiniStat label="Sales" value={inr(data?.today.salesIncome ?? 0)} tone="text-success" />
             <MiniStat label="Diesel" value={inr(data?.today.diesel ?? 0)} tone="text-danger" />
@@ -390,7 +390,7 @@ function Dashboard() {
         <SectionBar title="Today Rent Performance" icon="chart" />
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="grid gap-4 sm:grid-cols-2">
-            <MiniStat label="Today Rent" value={inr(data?.today.rent ?? 0)} tone="text-success" />
+            <MiniStat label="Today Rent" value={String(data?.today.rentCount ?? 0)} tone="text-success" />
             <MiniStat label="Diesel - OWN" value={inr(data?.today.rentDieselOwn ?? 0)} tone="text-danger" />
             <MiniStat label="Driver" value={inr(data?.today.rentDriver ?? 0)} tone="text-danger" />
             <MiniStat label="Rent" value={inr(data?.today.rent ?? 0)} tone="text-success" />
@@ -412,11 +412,13 @@ function Dashboard() {
       {/* Today Excavators Performance */}
       <div className="mt-5">
         <SectionBar title="Today Excavators Performance" icon="chart" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <MiniStat label="Loads" value={Number(data?.today.excavatorLoads ?? 0).toFixed(2)} />
+          <MiniStat label="Tons Per Rate" value={Number(data?.today.excavatorTonRate ?? 0).toFixed(2)} />
+          <MiniStat label="Diesel Amount" value={inr(data?.today.excavatorDiesel ?? 0)} tone="text-danger" />
           <MiniStat label="Tons" value={Number(data?.today.excavatorTons ?? 0).toFixed(2)} />
           <MiniStat label="Amount With GST" value={inr(data?.today.excavatorAmount ?? 0)} tone="text-success" />
-          <MiniStat label="Profit" value={inr(0)} tone="text-success" />
+          <MiniStat label="Profit" value={inr(data?.today.excavatorProfit ?? 0)} tone="text-success" />
         </div>
       </div>
 
