@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Download, Printer, Loader2, Power, PowerOff, ArrowUpDown, SlidersHorizontal, Columns3 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -128,6 +128,24 @@ function ExpenseDetails({ title, details, onChange }: { title: string; details: 
 }
 
 /* ---------- Config-driven sectioned entry form ---------- */
+const FORM_LOOKUPS: Record<string, { table: string; column: string }> = {
+  transporters: { table: "transporters", column: "transporter_name" },
+  business_transporters: { table: "transporters", column: "transporter_name" },
+  purchase_from: { table: "vendors", column: "vendor_name" },
+  materials: { table: "materials", column: "material_name" },
+  material: { table: "materials", column: "material_name" },
+  purchase_unit: { table: "materials", column: "material_unit" },
+  sales_unit: { table: "materials", column: "material_unit" },
+  unit: { table: "materials", column: "material_unit" },
+  client_name: { table: "clients", column: "client_name" },
+  delivery_location: { table: "clients", column: "address" },
+  vehicle: { table: "fleet_vehicles", column: "vehicle_number" },
+  vehicle_number: { table: "fleet_vehicles", column: "vehicle_number" },
+  driver: { table: "drivers", column: "driver_name" },
+  driver_name: { table: "drivers", column: "driver_name" },
+  choose_account: { table: "accounts", column: "display_name" },
+};
+
 function FormFieldControl({
   field,
   value,
@@ -137,6 +155,16 @@ function FormFieldControl({
   value: string;
   onChange: (key: string, value: string) => void;
 }) {
+  const lookup = FORM_LOOKUPS[field.key];
+  const { data: lookupOptions = [] } = useQuery({
+    queryKey: ["entry-form-lookup", lookup?.table, lookup?.column],
+    enabled: Boolean(lookup),
+    queryFn: async () => {
+      const { data, error } = await supabase.from(lookup!.table as never).select(lookup!.column as never).order(lookup!.column as never);
+      if (error) throw error;
+      return [...new Set((data as Array<Record<string, string | null>> ?? []).map((row) => row[lookup!.column]).filter((item): item is string => Boolean(item)))];
+    },
+  });
   if (field.type === "radio" && field.options) {
     return (
       <div className="flex gap-4 pt-2">
@@ -156,11 +184,11 @@ function FormFieldControl({
     );
   }
 
-  if (field.type === "select") {
+  if (field.type === "select" || lookup) {
     return (
       <select value={value} disabled={field.calculated} onChange={(event) => onChange(field.key, event.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:bg-muted">
         <option value="">-Select-</option>
-        {(field.options ?? []).map((option) => <option key={option} value={option}>{option}</option>)}
+        {(field.options ?? lookupOptions).map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
     );
   }
