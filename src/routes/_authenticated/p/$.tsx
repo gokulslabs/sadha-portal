@@ -64,6 +64,50 @@ function reportDate(value: unknown): string {
   return /^\d{4}-\d{2}-\d{2}/.test(text) ? text.slice(0, 10) : "";
 }
 
+/** Keep the read-only totals in step with Zoho's entry-form calculations. */
+function calculateFormValues(slug: string, values: Record<string, string>): Record<string, string> {
+  const number = (key: string) => Number(values[key]) || 0;
+  const decimal = (value: number) => String(Math.round((value + Number.EPSILON) * 100) / 100);
+  const set = (key: string, value: number) => { values[key] = decimal(value); };
+  const gstTotal = (amountKey: string, gstKey: string, gstAmountKey: string, netKey: string) => {
+    const amount = number(amountKey);
+    const gst = amount * number(gstKey) / 100;
+    set(gstAmountKey, gst);
+    set(netKey, amount + gst);
+  };
+
+  if (slug === "add-sales-entry") {
+    set("purchase_total", number("purchase_quantity") * number("purchase_rate"));
+    gstTotal("purchase_total", "purchase_gst", "purchase_gst_amount", "purchase_net_total");
+    set("purchase_balance", number("purchase_net_total") - number("purchase_paid"));
+    set("sales_total", number("sales_quantity") * number("sales_rate"));
+    gstTotal("sales_total", "sales_gst", "sales_gst_amount", "sales_net_total");
+  } else if (slug === "add-rent-entry") {
+    set("rent_amount", number("rent_quantity") * number("rent_price"));
+    gstTotal("rent_amount", "rent_gst", "rent_gst_amount", "rent_amount_with_gst");
+  } else if (slug === "add-day-fees-entry") {
+    const amount = number("total_load") * number("per_day_amount");
+    set("gst_amount", amount * number("gst") / 100);
+    set("amount_with_gst", amount + number("gst_amount"));
+  } else if (slug === "add-boulders-entries") {
+    set("amount", number("total_tons") * number("ton_per_rate"));
+    gstTotal("amount", "gst", "gst_amount", "amount_with_gst");
+  }
+
+  const usesTransportCalculation = ["add-sales-entry", "add-rent-entry", "add-day-fees-entry", "add-boulders-entries"].includes(slug);
+  if (usesTransportCalculation) {
+    set("total_vehicle_expense", number("driver_padi") + number("driver_food_amount") + number("shed_work_amount"));
+    set("driver_net_total", number("total_vehicle_expense") - number("driver_advance"));
+    if ("from_km" in values || "to_km" in values) set("total_km", number("to_km") - number("from_km"));
+    if ("diesel_liters" in values && number("diesel_liters") > 0) set("mileage", number("total_km") / number("diesel_liters"));
+    set("diesel_amount", number("diesel_rate_per_liter") * number("diesel_liters"));
+    set("total_trip_expense", number("total_vehicle_expense") + number("diesel_amount"));
+    const revenue = number("sales_net_total") || number("rent_amount_with_gst") || number("amount_with_gst");
+    set("profit", revenue - number("purchase_net_total") - number("total_trip_expense"));
+  }
+  return values;
+}
+
 /* ---------- Config-driven sectioned entry form ---------- */
 function FormFieldControl({
   field,
@@ -95,7 +139,7 @@ function FormFieldControl({
 
   if (field.type === "select") {
     return (
-      <select value={value} onChange={(event) => onChange(field.key, event.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm">
+      <select value={value} disabled={field.calculated} onChange={(event) => onChange(field.key, event.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:bg-muted">
         <option value="">-Select-</option>
         {(field.options ?? []).map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
@@ -106,9 +150,10 @@ function FormFieldControl({
     <Input
       type={fieldInputType(field)}
       value={value}
+      readOnly={field.calculated}
       placeholder={field.placeholder ?? `Enter ${field.label.toLowerCase()}`}
       onChange={(e) => onChange(field.key, e.target.value)}
-      className="h-10"
+      className="h-10 read-only:bg-muted read-only:text-muted-foreground"
     />
   );
 }
@@ -118,7 +163,7 @@ function EntryFormView({ def }: { def: EntryFormDef }) {
   const [values, setValues] = useState<Record<string, string>>({});
 
   function onChange(key: string, value: string) {
-    setValues((v) => ({ ...v, [key]: value }));
+    setValues((current) => calculateFormValues(def.slug, { ...current, [key]: value }));
   }
 
   async function onSubmit(e: React.FormEvent) {
