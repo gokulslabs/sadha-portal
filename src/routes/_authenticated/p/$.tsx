@@ -93,6 +93,15 @@ function FormFieldControl({
     );
   }
 
+  if (field.type === "select") {
+    return (
+      <select value={value} onChange={(event) => onChange(field.key, event.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm">
+        <option value="">-Select-</option>
+        {(field.options ?? []).map((option) => <option key={option} value={option}>{option}</option>)}
+      </select>
+    );
+  }
+
   return (
     <Input
       type={fieldInputType(field)}
