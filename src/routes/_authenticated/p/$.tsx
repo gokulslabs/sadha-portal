@@ -65,7 +65,7 @@ function reportDate(value: unknown): string {
 }
 
 /** Keep the read-only totals in step with Zoho's entry-form calculations. */
-function calculateFormValues(slug: string, values: Record<string, string>): Record<string, string> {
+function calculateFormValues(slug: string, values: Record<string, string>, vehicleDetailTotal = 0, tripDetailTotal = 0): Record<string, string> {
   const number = (key: string) => Number(values[key]) || 0;
   const decimal = (value: number) => String(Math.round((value + Number.EPSILON) * 100) / 100);
   const set = (key: string, value: number) => { values[key] = decimal(value); };
@@ -96,16 +96,35 @@ function calculateFormValues(slug: string, values: Record<string, string>): Reco
 
   const usesTransportCalculation = ["add-sales-entry", "add-rent-entry", "add-day-fees-entry", "add-boulders-entries"].includes(slug);
   if (usesTransportCalculation) {
-    set("total_vehicle_expense", number("driver_padi") + number("driver_food_amount") + number("shed_work_amount"));
+    set("total_vehicle_expense", number("driver_padi") + number("driver_food_amount") + number("shed_work_amount") + vehicleDetailTotal);
     set("driver_net_total", number("total_vehicle_expense") - number("driver_advance"));
     if ("from_km" in values || "to_km" in values) set("total_km", number("to_km") - number("from_km"));
     if ("diesel_liters" in values && number("diesel_liters") > 0) set("mileage", number("total_km") / number("diesel_liters"));
     set("diesel_amount", number("diesel_rate_per_liter") * number("diesel_liters"));
-    set("total_trip_expense", number("total_vehicle_expense") + number("diesel_amount"));
+    set("total_trip_expense", number("driver_net_total") + number("diesel_amount") + tripDetailTotal);
     const revenue = number("sales_net_total") || number("rent_amount_with_gst") || number("amount_with_gst");
     set("profit", revenue - number("purchase_net_total") - number("total_trip_expense"));
   }
   return values;
+}
+
+type ExpenseDetail = { date: string; expense_type: string; expense_amount: string };
+
+function ExpenseDetails({ title, details, onChange }: { title: string; details: ExpenseDetail[]; onChange: (details: ExpenseDetail[]) => void }) {
+  const update = (index: number, key: keyof ExpenseDetail, value: string) => onChange(details.map((detail, i) => i === index ? { ...detail, [key]: value } : detail));
+  return (
+    <div className="mt-4 border-t border-border pt-4">
+      <p className="text-xs font-medium text-foreground">{title}</p>
+      <p className="mt-0.5 text-[11px] text-muted-foreground">{title.startsWith("Vehicle") ? "Expense added to Driver Net Total" : "Expense added to Profit"}</p>
+      <div className="mt-2 overflow-x-auto rounded-md border border-border">
+        <table className="w-full min-w-[540px] text-sm">
+          <thead className="bg-muted/50 text-xs text-muted-foreground"><tr><th className="px-3 py-2 text-left">Date</th><th className="px-3 py-2 text-left">Expense Type</th><th className="px-3 py-2 text-left">Expense Amount</th><th className="w-12" /></tr></thead>
+          <tbody>{details.map((detail, index) => <tr key={index} className="border-t border-border"><td className="p-2"><Input type="date" value={detail.date} onChange={(e) => update(index, "date", e.target.value)} /></td><td className="p-2"><Input value={detail.expense_type} placeholder="Expense type" onChange={(e) => update(index, "expense_type", e.target.value)} /></td><td className="p-2"><Input type="number" min="0" value={detail.expense_amount} placeholder="0" onChange={(e) => update(index, "expense_amount", e.target.value)} /></td><td className="p-2"><Button type="button" variant="ghost" size="sm" onClick={() => onChange(details.filter((_, i) => i !== index))}>×</Button></td></tr>)}</tbody>
+        </table>
+      </div>
+      <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => onChange([...details, { date: "", expense_type: "", expense_amount: "" }])}><Plus className="mr-1 h-4 w-4" />Add New</Button>
+    </div>
+  );
 }
 
 /* ---------- Config-driven sectioned entry form ---------- */
@@ -161,9 +180,18 @@ function FormFieldControl({
 function EntryFormView({ def }: { def: EntryFormDef }) {
   const submit = useSubmitEntryForm(def);
   const [values, setValues] = useState<Record<string, string>>({});
+  const [vehicleExpenseDetails, setVehicleExpenseDetails] = useState<ExpenseDetail[]>([]);
+  const [tripExpenseDetails, setTripExpenseDetails] = useState<ExpenseDetail[]>([]);
+  const detailTotal = (details: ExpenseDetail[]) => details.reduce((sum, detail) => sum + (Number(detail.expense_amount) || 0), 0);
+  const updateExpenseDetails = (kind: "vehicle" | "trip", next: ExpenseDetail[]) => {
+    const vehicle = kind === "vehicle" ? next : vehicleExpenseDetails;
+    const trip = kind === "trip" ? next : tripExpenseDetails;
+    if (kind === "vehicle") setVehicleExpenseDetails(next); else setTripExpenseDetails(next);
+    setValues((current) => calculateFormValues(def.slug, { ...current, vehicle_expense_details: JSON.stringify(vehicle), trip_expense_details: JSON.stringify(trip) }, detailTotal(vehicle), detailTotal(trip)));
+  };
 
   function onChange(key: string, value: string) {
-    setValues((current) => calculateFormValues(def.slug, { ...current, [key]: value }));
+    setValues((current) => calculateFormValues(def.slug, { ...current, [key]: value }, detailTotal(vehicleExpenseDetails), detailTotal(tripExpenseDetails)));
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -181,6 +209,8 @@ function EntryFormView({ def }: { def: EntryFormDef }) {
       await submit.mutateAsync(values);
       toast.success("Entry saved successfully");
       setValues({});
+      setVehicleExpenseDetails([]);
+      setTripExpenseDetails([]);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not save entry");
     }
@@ -210,6 +240,7 @@ function EntryFormView({ def }: { def: EntryFormDef }) {
               </div>
             ))}
           </div>
+          {section.title === "Transport Details" && <div className="px-5 pb-5"><ExpenseDetails title="Vehicle Expense Details" details={vehicleExpenseDetails} onChange={(next) => updateExpenseDetails("vehicle", next)} /><ExpenseDetails title="Trip Expense Details" details={tripExpenseDetails} onChange={(next) => updateExpenseDetails("trip", next)} /></div>}
         </div>
       ))}
 
@@ -218,7 +249,7 @@ function EntryFormView({ def }: { def: EntryFormDef }) {
           {submit.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Submit
         </Button>
-        <Button type="button" variant="outline" onClick={() => setValues({})}>
+        <Button type="button" variant="outline" onClick={() => { setValues({}); setVehicleExpenseDetails([]); setTripExpenseDetails([]); }}>
           Reset
         </Button>
       </div>
