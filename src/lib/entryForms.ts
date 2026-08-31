@@ -102,6 +102,7 @@ export const ENTRY_FORMS: EntryFormDef[] = [
           t("diesel_rate_per_liter", "Diesel Rate Per Liter", { type: "number" }),
           t("diesel_amount", "Diesel Amount", { type: "number", required: true, calculated: true }),
           t("tank_status", "Tank Status", { type: "select", options: ["Refill", "Empty"] }),
+          t("bunk_reference", "Bunk Reference"),
           t("total_hour", "Total Hour", { type: "number", calculated: true }),
           t("total_diesel_l", "Total DIesel (L)", { type: "number", calculated: true }),
           t("mileage", "Mileage", { type: "number", calculated: true }),

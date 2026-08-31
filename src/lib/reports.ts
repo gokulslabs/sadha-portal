@@ -246,6 +246,7 @@ export const REPORTS: ReportDef[] = [
       num("Diesel Rate Per Liter", "diesel_rate_per_liter"),
       num("Diesel Amount", "diesel_amount"),
       txt("Tank Status", "tank_status"),
+      txt("Bunk Reference", "bunk_reference"),
       num("Total Hour", "total_hour"),
       num("Total DIesel (L)", "total_diesel_l"),
       num("Mileage", "mileage"),
