@@ -55,6 +55,12 @@ const inr = (n: number) =>
 
 const inr0 = (n: number) => "₹ " + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
 
+const todayLabel = () => {
+  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric" }).formatToParts(new Date());
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("day")}-${part("month")}-${part("year")}`;
+};
+
 function SectionBar({ title, icon }: { title: string; icon: "chart" | "action" }) {
   return (
     <div className="mb-3 flex items-center justify-center gap-2 rounded-md bg-card py-3.5 shadow-panel">
@@ -268,6 +274,32 @@ function TransporterDonut({
   );
 }
 
+function PerformanceChart({
+  values,
+  labels,
+}: {
+  values: { key: string; value: number }[];
+  labels: string[];
+}) {
+  const chartData = values.map(({ key, value }) => ({ name: key, value }));
+  return (
+    <div className="rounded-md bg-card p-4 shadow-panel">
+      <div className="h-[280px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData} margin={{ top: 18, right: 8, left: 8, bottom: 8 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+            <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} />
+            <YAxis tickLine={false} axisLine={false} fontSize={12} width={70} />
+            <Tooltip formatter={(value: number) => inr(Number(value))} />
+            <Bar dataKey="value" fill="var(--chart-green)" radius={[3, 3, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <p className="text-center text-xs text-muted-foreground">{labels.join(" · ")}</p>
+    </div>
+  );
+}
+
 function Dashboard() {
   const { data, isLoading } = useDashboardData();
   const [quickAction, setQuickAction] = useState<QuickActionKind | null>(null);
@@ -356,7 +388,7 @@ function Dashboard() {
             </button>
             <div className="h-[360px] pt-6">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={financeByType}>
+                <BarChart data={financeByType.map((item) => ({ ...item, name: item.name.replace(/ Payment$/, "") }))}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                   <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} />
                   <YAxis tickLine={false} axisLine={false} fontSize={12} width={70} />
@@ -383,6 +415,16 @@ function Dashboard() {
             <MiniStat label="Driver" value={inr(data?.today.driver ?? 0)} tone="text-danger" slug="drivers" />
             <MiniStat label="Profit" value={inr(data?.today.profit ?? 0)} tone="text-success" />
           </div>
+          <PerformanceChart
+            values={[
+              { key: "Sales", value: data?.today.salesIncome ?? 0 },
+              { key: "Purchase", value: data?.today.purchase ?? 0 },
+              { key: "Driver", value: data?.today.driver ?? 0 },
+              { key: "Diesel", value: data?.today.diesel ?? 0 },
+              { key: "Profit", value: data?.today.profit ?? 0 },
+            ]}
+            labels={[todayLabel(), "Sales Net Total", "Purchase Net Total", "Driver Net Total", "Diesel Amount", "Profit"]}
+          />
         </div>
       </div>
 
@@ -398,6 +440,15 @@ function Dashboard() {
             <MiniStat label="Diesel - RENT" value={inr(data?.today.rentDieselRent ?? 0)} tone="text-danger" slug="rent-entries" />
             <MiniStat label="Profit" value={inr(data?.today.rentProfit ?? 0)} tone="text-success" />
           </div>
+          <PerformanceChart
+            values={[
+              { key: "Rent", value: data?.today.rent ?? 0 },
+              { key: "Driver", value: data?.today.rentDriver ?? 0 },
+              { key: "Diesel", value: data?.today.rentDieselRent ?? 0 },
+              { key: "Profit", value: data?.today.rentProfit ?? 0 },
+            ]}
+            labels={[todayLabel(), "Rent Amount with GST", "Driver Net Total", "Diesel Amount", "Profit"]}
+          />
         </div>
       </div>
 

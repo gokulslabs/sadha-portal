@@ -42,7 +42,9 @@ export function useReportRows(def?: ReportDef) {
         if (rows.length < PAGE) break;
       }
       const dateColumn = def.columns.find((column) => ["entry_date", "date_time", "added_time"].includes(column.key));
-      if (dateColumn) all.sort((a, b) => sourceDateValue(b[dateColumn.key]) - sourceDateValue(a[dateColumn.key]));
+      // Zoho opens its reports in ascending date order by default; users can
+      // reverse this interactively from the report header sort control.
+      if (dateColumn) all.sort((a, b) => sourceDateValue(a[dateColumn.key]) - sourceDateValue(b[dateColumn.key]));
       return all;
     },
   });

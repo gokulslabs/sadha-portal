@@ -144,16 +144,25 @@ export function useDashboardData() {
         .filter((t) => t.value !== 0)
         .sort((a, b) => b.value - a.value);
 
-      // Financial by "type" (Client/Vendor/Driver/Own)
+      // Zoho's Financial Overview is grouped by payment-for category, not by
+      // the Income/Expense transaction direction.
       const fMap = new Map<string, { income: number; expense: number }>();
       for (const r of incomeExpense) {
-        const key = String(r["type"] ?? "Other").trim() || "Other";
+        const paymentFor = String(r["payment_for"] ?? "").trim().toLowerCase();
+        const key = paymentFor.includes("vendor") ? "Vendor Payment"
+          : paymentFor.includes("client") ? "Client Payment"
+            : paymentFor.includes("driver") ? "Driver Payment"
+              : paymentFor.includes("diesel") ? "Diesel Payment"
+                : paymentFor.includes("own") ? "Own" : "Other";
         const cur = fMap.get(key) ?? { income: 0, expense: 0 };
         cur.income += Number(r["income"]) || 0;
         cur.expense += Number(r["expense"]) || 0;
         fMap.set(key, cur);
       }
-      const byType = [...fMap.entries()].map(([name, v]) => ({ name, ...v }));
+      const financeOrder = ["Client Payment", "Diesel Payment", "Vendor Payment", "Driver Payment", "Own", "Other"];
+      const byType = [...fMap.entries()]
+        .map(([name, v]) => ({ name, ...v }))
+        .sort((a, b) => financeOrder.indexOf(a.name) - financeOrder.indexOf(b.name));
 
       const todaySalesRows = sales.filter((r) => isToday(r["entry_date"]));
       const todayRentRows = rent.filter((r) => isToday(r["entry_date"]));
