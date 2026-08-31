@@ -115,6 +115,10 @@ function calculateFormValues(slug: string, values: Record<string, string>, vehic
     set("total_km", number("to_km") - number("from_km"));
     set("diesel_amount", number("diesel_liters") * number("diesel_rate_per_liter"));
     if (number("diesel_liters") > 0) set("mileage", number("total_km") / number("diesel_liters"));
+  } else if (slug === "add-diesel-entry") {
+    set("total_km", number("to_km") - number("from_km"));
+    set("diesel_amount", number("diesel_liters") * number("diesel_rate_per_liter"));
+    if (number("diesel_liters") > 0) set("mileage", number("total_km") / number("diesel_liters"));
   }
 
   const usesTransportCalculation = ["add-sales-entry", "add-rent-entry", "add-day-fees-entry", "add-boulders-entries"].includes(slug);

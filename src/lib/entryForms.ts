@@ -74,6 +74,10 @@ const REPORT_FOR_SECTION: FormSection = {
 };
 
 export const ENTRY_FORMS: EntryFormDef[] = [
+  { slug: "add-diesel-entry", title: "Diesel Entry", table: "diesel_entries", sections: [
+    { title: "Basic Details", fields: [t("sales_entry_id","Sales"),t("rent_entry_id","Rent Entry"),t("day_fees_entry_id","Day Fees Entry"),t("excavator_id","Excavators"),t("excavator_rent_entry_id","Excavators Rent Entries"),t("excavator_daily_entry_id","Excavators Daily Entries"),t("boulders_entries","Boulders Entries"),t("dc_number","DC Number"),t("zoho_id","Diesel Entry ID"),t("entry_date","Date",{type:"date",required:true}),t("business_transporters","Business Transporters",{required:true}),t("machine","Machine"),t("vehicle","Vehicle"),t("driver","Driver"),t("source","Source",{type:"select",options:["Own bunk","Rent"]}),t("rec_from","From",{type:"radio",options:["Direct","Sales","Rent","Excavator","Excavator Rent","Excavator Daily","Day Fees","Boulders"]}),t("diesel_rate_per_liter","Diesel Rate Per Liter",{type:"number"})]},
+    { title: "KM Details", fields: [t("from_km","From KM",{type:"number"}),t("to_km","To KM",{type:"number"}),t("total_km","Total KM",{type:"number",calculated:true}),t("diesel_liters","Diesel Liters",{type:"number",required:true}),t("mileage","Mileage",{type:"number",calculated:true}),t("diesel_amount","Diesel Amount",{type:"number",required:true,calculated:true}),t("bunk_reference","Bunk Reference"),t("tank_status","Tank Status",{type:"radio",options:["Full","Refill"]})]}
+  ] },
   { slug: "add-excavators-diesel-entry", title: "Diesel Entry", table: "excavator_diesel_entries", sections: [
     { title: "Basic Details", fields: [
       t("sales_entry_id", "Sales"), t("rent_entry_id", "Rent Entry"), t("day_fees_entry_id", "Day Fees Entry"), t("excavator_id", "Excavators"), t("excavator_rent_entry_id", "Excavators Rent Entries"), t("excavator_daily_entry_id", "Excavators Daily Entries"), t("boulders_entries", "Boulders Entries"), t("dc_number", "DC Number"), t("zoho_id", "Diesel Entry ID"), t("entry_date", "Date", { type: "date", required: true }), t("business_transporters", "Business Transporters", { required: true }), t("machine", "Machine"), t("vehicle", "Vehicle"), t("driver", "Driver"), t("source", "Source", { type: "select", options: ["Own bunk", "Rent"] }), t("rec_from", "From", { type: "radio", options: ["Direct", "Sales", "Rent", "Excavator", "Excavator Rent", "Excavator Daily", "Day Fees", "Boulders"] }), t("diesel_rate_per_liter", "Diesel Rate Per Liter", { type: "number" }),
@@ -439,6 +443,7 @@ export const ENTRY_FORM_BY_SLUG = new Map(ENTRY_FORMS.map((f) => [f.slug, f]));
 
 /** Map a report slug to its "add" form slug (when one exists). */
 export const REPORT_TO_FORM: Record<string, string> = {
+  "diesel-entries": "add-diesel-entry",
   "excavators-entries": "add-excavators-entry",
   "excavators-daily-entries": "add-excavators-daily-entry",
   "excavators-rent-entries": "add-excavators-rent-entry",
