@@ -188,8 +188,8 @@ function StatCard({
   return <Link to="/p/$" params={{ _splat: slug }} className="block">{content}</Link>;
 }
 
-function MiniStat({ label, value, tone }: { label: string; value: string; tone?: string }) {
-  return (
+function MiniStat({ label, value, tone, slug }: { label: string; value: string; tone?: string; slug?: string }) {
+  const content = (
     <div className="flex items-center gap-3 rounded-md bg-card px-4 py-5 shadow-panel transition-shadow duration-200 hover:shadow-lift">
       <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-sm">₹</span>
       <div>
@@ -198,6 +198,7 @@ function MiniStat({ label, value, tone }: { label: string; value: string; tone?:
       </div>
     </div>
   );
+  return slug ? <Link to="/p/$" params={{ _splat: slug }} className="block">{content}</Link> : content;
 }
 
 const PIE_COLORS = ["var(--chart-red)", "var(--chart-amber)", "var(--chart-blue)", "var(--chart-green)", "var(--chart-5)"];
@@ -322,7 +323,7 @@ function Dashboard() {
             <MiniStat label="Overall Current Balance" value={inr(data?.transporterTotal ?? 0)} />
             <div className="grid gap-4 sm:grid-cols-2">
               {transporters.slice(0, 4).map((t) => (
-                <MiniStat key={t.name} label={t.name} value={inr(t.value)} />
+                <MiniStat key={t.name} label={t.name} value={inr(t.value)} slug="transporters" />
               ))}
               {transporters.length === 0 && (
                 <MiniStat label="No transporter data" value="—" />
@@ -375,11 +376,11 @@ function Dashboard() {
         <SectionBar title="Today Sales Performance" icon="chart" />
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="grid gap-4 sm:grid-cols-2">
-            <MiniStat label="Today Sales" value={String(data?.today.salesCount ?? 0)} />
-            <MiniStat label="Purchase" value={inr(data?.today.purchase ?? 0)} tone="text-danger" />
-            <MiniStat label="Sales" value={inr(data?.today.salesIncome ?? 0)} tone="text-success" />
-            <MiniStat label="Diesel" value={inr(data?.today.diesel ?? 0)} tone="text-danger" />
-            <MiniStat label="Driver" value={inr(data?.today.driver ?? 0)} tone="text-danger" />
+            <MiniStat label="Today Sales" value={String(data?.today.salesCount ?? 0)} slug="sales-entries" />
+            <MiniStat label="Purchase" value={inr(data?.today.purchase ?? 0)} tone="text-danger" slug="sales-entries" />
+            <MiniStat label="Sales" value={inr(data?.today.salesIncome ?? 0)} tone="text-success" slug="sales-entries" />
+            <MiniStat label="Diesel" value={inr(data?.today.diesel ?? 0)} tone="text-danger" slug="diesel-entries" />
+            <MiniStat label="Driver" value={inr(data?.today.driver ?? 0)} tone="text-danger" slug="drivers" />
             <MiniStat label="Profit" value={inr(data?.today.profit ?? 0)} tone="text-success" />
           </div>
         </div>
@@ -390,11 +391,11 @@ function Dashboard() {
         <SectionBar title="Today Rent Performance" icon="chart" />
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="grid gap-4 sm:grid-cols-2">
-            <MiniStat label="Today Rent" value={String(data?.today.rentCount ?? 0)} tone="text-success" />
-            <MiniStat label="Diesel - OWN" value={inr(data?.today.rentDieselOwn ?? 0)} tone="text-danger" />
-            <MiniStat label="Driver" value={inr(data?.today.rentDriver ?? 0)} tone="text-danger" />
-            <MiniStat label="Rent" value={inr(data?.today.rent ?? 0)} tone="text-success" />
-            <MiniStat label="Diesel - RENT" value={inr(data?.today.rentDieselRent ?? 0)} tone="text-danger" />
+            <MiniStat label="Today Rent" value={String(data?.today.rentCount ?? 0)} tone="text-success" slug="rent-entries" />
+            <MiniStat label="Diesel - OWN" value={inr(data?.today.rentDieselOwn ?? 0)} tone="text-danger" slug="rent-entries" />
+            <MiniStat label="Driver" value={inr(data?.today.rentDriver ?? 0)} tone="text-danger" slug="drivers" />
+            <MiniStat label="Rent" value={inr(data?.today.rent ?? 0)} tone="text-success" slug="rent-entries" />
+            <MiniStat label="Diesel - RENT" value={inr(data?.today.rentDieselRent ?? 0)} tone="text-danger" slug="rent-entries" />
             <MiniStat label="Profit" value={inr(data?.today.rentProfit ?? 0)} tone="text-success" />
           </div>
         </div>
@@ -404,8 +405,8 @@ function Dashboard() {
       <div className="mt-5">
         <SectionBar title="Today Direct Diesel Performance" icon="chart" />
         <div className="grid gap-4 sm:grid-cols-2">
-          <MiniStat label="Diesel - RENT" value={inr(data?.today.directDieselRent ?? 0)} tone="text-danger" />
-          <MiniStat label="Diesel - OWN" value={inr(data?.today.directDieselOwn ?? 0)} tone="text-danger" />
+          <MiniStat label="Diesel - RENT" value={inr(data?.today.directDieselRent ?? 0)} tone="text-danger" slug="diesel-entries" />
+          <MiniStat label="Diesel - OWN" value={inr(data?.today.directDieselOwn ?? 0)} tone="text-danger" slug="diesel-entries" />
         </div>
       </div>
 
@@ -413,12 +414,12 @@ function Dashboard() {
       <div className="mt-5">
         <SectionBar title="Today Excavators Performance" icon="chart" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <MiniStat label="Loads" value={Number(data?.today.excavatorLoads ?? 0).toFixed(2)} />
-          <MiniStat label="Tons Per Rate" value={Number(data?.today.excavatorTonRate ?? 0).toFixed(2)} />
-          <MiniStat label="Diesel Amount" value={inr(data?.today.excavatorDiesel ?? 0)} tone="text-danger" />
-          <MiniStat label="Tons" value={Number(data?.today.excavatorTons ?? 0).toFixed(2)} />
-          <MiniStat label="Amount With GST" value={inr(data?.today.excavatorAmount ?? 0)} tone="text-success" />
-          <MiniStat label="Profit" value={inr(data?.today.excavatorProfit ?? 0)} tone="text-success" />
+          <MiniStat label="Loads" value={Number(data?.today.excavatorLoads ?? 0).toFixed(2)} slug="excavators-daily-entries" />
+          <MiniStat label="Tons Per Rate" value={Number(data?.today.excavatorTonRate ?? 0).toFixed(2)} slug="excavators-daily-entries" />
+          <MiniStat label="Diesel Amount" value={inr(data?.today.excavatorDiesel ?? 0)} tone="text-danger" slug="excavators-daily-entries" />
+          <MiniStat label="Tons" value={Number(data?.today.excavatorTons ?? 0).toFixed(2)} slug="excavators-daily-entries" />
+          <MiniStat label="Amount With GST" value={inr(data?.today.excavatorAmount ?? 0)} tone="text-success" slug="excavators-daily-entries" />
+          <MiniStat label="Profit" value={inr(data?.today.excavatorProfit ?? 0)} tone="text-success" slug="excavators-daily-entries" />
         </div>
       </div>
 
