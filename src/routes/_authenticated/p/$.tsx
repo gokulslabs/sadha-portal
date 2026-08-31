@@ -290,6 +290,39 @@ function EntryFormView({ def }: { def: EntryFormDef }) {
   );
 }
 
+/** The source exposes Add on every report, including master and excavator reports. */
+function ReportAddDialog({ def, open, onOpenChange }: { def: NonNullable<ReturnType<typeof findReport>>; open: boolean; onOpenChange: (open: boolean) => void }) {
+  const qc = useQueryClient();
+  const [values, setValues] = useState<Record<string, string>>({});
+  const editable = def.columns.filter((column) => !["id", "zoho_id", "added_time", "modified_user"].includes(column.key));
+  const create = useMutation({
+    mutationFn: async () => {
+      const payload: Record<string, string | number | null> = {};
+      for (const column of editable) {
+        const value = values[column.key] ?? "";
+        payload[column.key] = column.numeric ? (Number(value) || 0) : value.trim() || null;
+      }
+      const { error } = await supabase.from(def.table as never).insert(payload as never);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["report", def.slug] }); qc.invalidateQueries({ queryKey: ["dashboard"] }); toast.success("Entry saved successfully"); setValues({}); onOpenChange(false); },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Could not save entry"),
+  });
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto">
+        <DialogHeader><DialogTitle>Add {def.label}</DialogTitle></DialogHeader>
+        <form onSubmit={(event) => { event.preventDefault(); create.mutate(); }} className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {editable.map((column) => <div key={column.key} className="space-y-1.5"><Label>{column.label}</Label><Input type={column.numeric ? "number" : "text"} step={column.numeric ? "0.01" : undefined} value={values[column.key] ?? ""} onChange={(event) => setValues((current) => ({ ...current, [column.key]: event.target.value }))} /></div>)}
+          </div>
+          <Button type="submit" disabled={create.isPending}>{create.isPending ? "Saving…" : "Submit"}</Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 const FAMILY_SLUGS: Record<string, { title: string; description: string; slugs: string[] }> = {
   "boulder-reports": {
     title: "Boulder Reports",
@@ -385,6 +418,7 @@ function PageView() {
   const [drafts, setDrafts] = useState<Record<string, Record<string, string>>>({});
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [showSummary, setShowSummary] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const sourceSearch = typeof window === "undefined" ? new URLSearchParams() : new URLSearchParams(window.location.search);
   const reportFrom = sourceSearch.get("from") ?? "";
   const reportTo = sourceSearch.get("to") ?? "";
@@ -547,7 +581,7 @@ function PageView() {
                 <DropdownMenuItem disabled={filtered.length === 0} onClick={() => exportRowsCsv(def, filtered)}><Download className="mr-2 h-4 w-4" />Export CSV</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            {REPORT_TO_FORM[def.slug] && (
+            {REPORT_TO_FORM[def.slug] ? (
               <Link
                 to="/p/$"
                 params={{ _splat: REPORT_TO_FORM[def.slug]! }}
@@ -555,6 +589,8 @@ function PageView() {
               >
                 <Plus className="h-4 w-4" /> Add
               </Link>
+            ) : (
+              <Button className="h-9" onClick={() => setAddOpen(true)}><Plus className="mr-1.5 h-4 w-4" />Add</Button>
             )}
           </div>
         </div>
@@ -663,6 +699,7 @@ function PageView() {
             </div>
           )}
         </div>
+        <ReportAddDialog def={def} open={addOpen} onOpenChange={setAddOpen} />
       </div>
     </AppShell>
   );
